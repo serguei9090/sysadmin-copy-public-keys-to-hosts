@@ -3,7 +3,16 @@
 import os
 import subprocess
 from itertools import product
+import socket
 
+#funcion de socket para revisar puerto abierto
+def is_port_open(ip_address, port):
+    try:
+        with socket.create_connection((ip_address, port), timeout=1) as sock:
+            return True
+    except (socket.timeout, ConnectionRefusedError):
+        return False
+    
 # Cargar las rutas de los archivos de llaves públicas SSH en una lista
 ssh_pub_dir = "ssh_pub"
 ssh_pub_files = os.listdir(ssh_pub_dir)
@@ -37,8 +46,7 @@ with open(users_file) as f:
 # Recorrer cada IP y comprobar si el puerto 22 está abierto
 ip_port_status = {}
 for ip_address in ip_addresses:
-    result_telnet = subprocess.run(['timeout', '1', 'telnet', '-e', 'quit', ip_address, '22'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if result_telnet.returncode == 0:
+    if is_port_open(ip_address, 22):
         ip_port_status[ip_address] = True
     else:
         print(f"No se pudo conectar al host {ip_address} o el puerto 22 no está abierto")
