@@ -75,7 +75,7 @@ for ip_address, (user, password) in product(ip_addresses, users):
 
 # Создать отчет о неудачных попытках
 if failed_auth_count:
-    with open("failed_auth.txt", "w") as f:
+    with open("failed_auth.list", "w") as f:
         f.write("Следующие пользователи не смогли аутентифицироваться:\n")
         for (user, ip_address), count in failed_auth_count.items():
             f.write(f"{user} на {ip_address}: {count} неудачных попыток\n")
