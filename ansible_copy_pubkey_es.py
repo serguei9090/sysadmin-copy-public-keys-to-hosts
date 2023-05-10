@@ -5,7 +5,7 @@ import subprocess
 from itertools import product
 import socket
 
-#funcion de socket para revisar puerto abierto
+# Función de socket para revisar puerto abierto
 def is_port_open(ip_address, port):
     try:
         with socket.create_connection((ip_address, port), timeout=1) as sock:
@@ -53,6 +53,7 @@ for ip_address in ip_addresses:
         ip_port_status[ip_address] = False
 
 # Recorrer cada IP con el puerto 22 abierto y copiar cada llave pública SSH para cada usuario
+successful_ips = set()
 failed_auth_count = {}
 total_attempts = 0
 successful_attempts = 0
@@ -67,6 +68,8 @@ for ip_address, (user, password) in product(ip_addresses, users):
         if result.returncode == 0:
             successful_attempts += 1
             print(f"La llave {ssh_pub_key} se copió correctamente en {ip_address} para el usuario {user}")
+            if (ip_address, user) not in successful_ips:
+                successful_ips.add((ip_address, user))
         else:
             failed_auth_count[(user, ip_address)] = failed_auth_count.get((user, ip_address), 0) + 1
 
@@ -77,6 +80,13 @@ if failed_auth_count:
         for (user, ip_address), count in failed_auth_count.items():
             f.write(f"{user} en {ip_address}: {count} intentos fallidos\n")
 
-# Mostrar un mensaje de resumen
-print(f"Terminado. Se intentaron {total_attempts} autenticaciones en {len(ip_addresses)*len(users)} combinaciones de usuario y dirección IP en {len(ip_addresses)} IP")
-print(f"Se lograron {successful_attempts} autenticaciones exitosas en {len(ip_addresses)*len(users)} intentos.")
+# Mostrar el resumen
+print(f"Se realizaron {total_attempts} intentos en total. Autenticaciones en {len(ip_addresses)*len(users)} combinaciones de usuario y dirección IP en {len(ip_addresses)} IP")
+print(f"Hubo {successful_attempts} intentos exitosos en {len(successful_ips)} direcciones IP únicas.")
+
+# Escribir el listado de direcciones IP y usuarios exitosos en un archivo de texto
+successful_ips_filename = f"{start_ip.rsplit('.', 1)[0]}.hostok.list"
+with open(successful_ips_filename, "w") as successful_ips_file:
+    for ip_address, user in successful_ips:
+        successful_ips_file.write(f"{ip_address}:{user}\n")
+print(f"Se escribió el listado de direcciones IP y usuarios exitosos en el archivo {successful_ips_filename}")
