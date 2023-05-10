@@ -81,7 +81,7 @@ if failed_auth_count:
             f.write(f"{user} at {ip_address}: {count} failed attempts\n")
 
 # Show the summary
-print(f"A total of {total_attempts} attempts were made. Authentications in {len(ip_addresses)*len(users)} combinations of user and IP address on {len(ip_addresses)} IPs")
+print(f"A total of {total_attempts} attempts were made.")
 print(f"There were {successful_attempts} successful attempts on {len(successful_ips)} unique IP addresses.")
 
 # Write the list of successful IP addresses and users to a text file
