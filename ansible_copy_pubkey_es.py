@@ -34,17 +34,24 @@ users_file = "users"
 with open(users_file) as f:
     users = [tuple(line.strip().split(":")) for line in f]
 
-# Recorrer cada IP y copiar cada llave pública SSH para cada usuario
+# Recorrer cada IP y comprobar si el puerto 22 está abierto
+ip_port_status = {}
+for ip_address in ip_addresses:
+    result_telnet = subprocess.run(['timeout', '1', 'telnet', '-e', 'quit', ip_address, '22'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if result_telnet.returncode == 0:
+        ip_port_status[ip_address] = True
+    else:
+        print(f"No se pudo conectar al host {ip_address} o el puerto 22 no está abierto")
+        ip_port_status[ip_address] = False
+
+# Recorrer cada IP con el puerto 22 abierto y copiar cada llave pública SSH para cada usuario
 failed_auth_count = {}
 total_attempts = 0
 successful_attempts = 0
 for ip_address, (user, password) in product(ip_addresses, users):
-    # Comprobar si el host tiene conexión
-    result_ping = subprocess.run(['ping', '-c', '1', '-W', '1', ip_address], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if result_ping.returncode != 0:
-        print(f"No se pudo conectar al host {ip_address}")
+    if not ip_port_status[ip_address]:
         continue
-        
+    
     # Copiar cada llave pública SSH para cada usuario
     for ssh_pub_key in ssh_pub_keys:
         total_attempts += 1
@@ -63,5 +70,5 @@ if failed_auth_count:
             f.write(f"{user} en {ip_address}: {count} intentos fallidos\n")
 
 # Mostrar un mensaje de resumen
-print(f"Terminado. Se intentaron {total_attempts} autenticaciones en {len(ip_addresses)*len(users)} combinaciones de usuario y dirección IP en {len(ip_addresses)} IP" )
+print(f"Terminado. Se intentaron {total_attempts} autenticaciones en {len(ip_addresses)*len(users)} combinaciones de usuario y dirección IP en {len(ip_addresses)} IP")
 print(f"Se lograron {successful_attempts} autenticaciones exitosas en {len(ip_addresses)*len(users)} intentos.")
