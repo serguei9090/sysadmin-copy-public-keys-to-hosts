@@ -14,7 +14,8 @@ def is_port_open(ip_address, port):
         return False
     
 # Load the paths of SSH public key files into a list
-ssh_pub_dir = "ssh_pub"
+#ssh_pub_dir = "ssh_pub"
+ssh_pub_dir = '/home/dvx-1/python/ssh_pub'
 ssh_pub_files = os.listdir(ssh_pub_dir)
 ssh_pub_keys = [os.path.join(ssh_pub_dir, file) for file in ssh_pub_files if file.endswith(".pub")]
 
@@ -39,7 +40,8 @@ while True:
 # Build a list of complete IP addresses
 ip_addresses = [f"{start_ip.rsplit('.', 1)[0]}.{i}" for i in range(int(start_ip.split(".")[-1]), int(end_ip.split(".")[-1]) + 1)]
 # Load the users and passwords
-users_file = "users"
+#users_file = "users"
+users_file = '/home/dvx-1/python/users'
 with open(users_file) as f:
     users = [tuple(line.strip().split(":")) for line in f]
 
